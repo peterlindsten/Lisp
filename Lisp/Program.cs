@@ -2,7 +2,7 @@
 
 namespace Lisp
 {
-    public class Program
+    public static class Program
     {
         public static int Main(string[] args)
         {
@@ -38,17 +38,17 @@ namespace Lisp
             return Print(Eval(Read(line), env));
         }
 
-        public static AstObject Read(string expression)
+        private static AstObject Read(string expression)
         {
             return Reader.Read(expression);
         }
 
-        public static AstObject Eval(AstObject ao, Environment env)
+        private static AstObject Eval(AstObject ao, Environment env)
         {
             return Evaluator.Eval(ao, env);
         }
 
-        public static string Print(AstObject ao)
+        private static string Print(AstObject ao)
         {
             return Printer.Print(ao);
         }

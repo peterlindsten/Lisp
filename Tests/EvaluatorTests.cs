@@ -66,5 +66,55 @@ namespace Tests
                         new AstList(),
                         new AstSymbol("a")),
                     e));
+
+        [Fact]
+        public void IfTrueEvalsThenButNotElse()
+        {
+            Assert.Throws<EvaluationException>(() => Eval(new AstSymbol("two"), e));
+            Assert.Equal(new AstNumber(1),
+                Eval(new AstList(new AstSymbol("if"),
+                        new AstBoolean(true),
+                        new AstSymbol("one"),
+                        new AstSymbol("two")),
+                    e));
+        }
+
+
+        [Fact]
+        public void IfFalseEvalsElseButNotThen()
+        {
+            Assert.Throws<EvaluationException>(() => Eval(new AstSymbol("two"), e));
+            Assert.Equal(new AstNumber(1),
+                Eval(new AstList(new AstSymbol("if"),
+                        new AstBoolean(false),
+                        new AstSymbol("two"),
+                        new AstSymbol("one")),
+                    e));
+        }
+
+        [Fact]
+        public void IfTakes2Or3Arguments()
+        {
+            Eval(new AstList(new AstSymbol("if"),
+                    new AstBoolean(false),
+                    new AstSymbol("two"),
+                    new AstSymbol("one")),
+                e);
+            Eval(new AstList(new AstSymbol("if"),
+                    new AstBoolean(true),
+                    new AstSymbol("one")),
+                e);
+            Assert.Throws<EvaluationException>(
+                () => Eval(new AstList(new AstSymbol("if"),
+                        new AstBoolean(true)),
+                    e));
+            Assert.Throws<EvaluationException>(
+                () => Eval(new AstList(new AstSymbol("if"),
+                        new AstBoolean(true),
+                        new AstBoolean(true),
+                        new AstBoolean(true),
+                        new AstBoolean(true)),
+                    e));
+        }
     }
 }

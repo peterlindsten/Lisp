@@ -64,12 +64,10 @@ namespace Lisp
 
         private static AstAtom ParseAtom(Queue<Token> tokens)
         {
-            int i;
-            double d;
             var t = tokens.Dequeue();
-            if (int.TryParse(t.Text, out i)) 
+            if (int.TryParse(t.Text, out var i))
                 return new AstNumber(i);
-            if (double.TryParse(t.Text, out d))
+            if (double.TryParse(t.Text, out var d))
                 return new AstNumber(d);
             switch (t.Text)
             {

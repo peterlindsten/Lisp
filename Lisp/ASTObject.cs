@@ -45,6 +45,67 @@ namespace Lisp
                 num += selector(source1);
             return num;
         }
+
+        public static AstNumber Multiply<TSource>(this IEnumerable<TSource> source, Func<TSource, AstNumber> selector)
+        {
+            if (source == null)
+                throw new ArgumentNullException();
+            if (selector == null)
+                throw new ArgumentNullException();
+            var num = new AstNumber(1);
+            foreach (var source1 in source)
+                num *= selector(source1);
+            return num;
+        }
+
+        public static AstNumber Subtract<TSource>(this List<TSource> source, Func<TSource, AstNumber> selector)
+            where TSource : AstObject
+        {
+            if (source == null)
+                throw new ArgumentNullException();
+            if (selector == null)
+                throw new ArgumentNullException();
+            var first = selector(source.First());
+            if (source.Count == 1)
+                return -first;
+            return source.Skip(1).Aggregate(first, (current, next) => current - selector(next));
+        }
+
+        public static AstNumber Divide<TSource>(this List<TSource> source, Func<TSource, AstNumber> selector)
+            where TSource : AstObject
+        {
+            if (source == null)
+                throw new ArgumentNullException();
+            if (selector == null)
+                throw new ArgumentNullException();
+            var first = selector(source.First());
+            if (source.Count == 1)
+                return new AstNumber(1.0) / first;
+            return source.Skip(1).Aggregate(first, (current, next) => current / selector(next));
+        }
+
+        public static AstBoolean LargerThen<TSource>(this List<TSource> source, Func<TSource, AstNumber> selector)
+            where TSource : AstObject
+        {
+            if (source == null)
+                throw new ArgumentNullException();
+            if (selector == null)
+                throw new ArgumentNullException();
+            if (source.Count < 2)
+                throw new Exception("Too few args");
+            var q = new Queue<TSource>(source);
+
+            var previous = selector(q.Dequeue());
+            var ret = new AstBoolean(false);
+            while (q.Count > 0)
+            {
+                var current = selector(q.Dequeue());
+                ret = previous > current;
+                previous = current;
+            }
+
+            return ret;
+        }
     }
 
     public interface AstAtom : AstObject, IRepresentable
@@ -65,6 +126,43 @@ namespace Lisp
         public static AstNumber operator +(AstNumber left, AstNumber right)
         {
             return new AstNumber(left.Value + right.Value);
+        }
+
+        public static AstNumber operator *(AstNumber left, AstNumber right)
+        {
+            return new AstNumber(left.Value * right.Value);
+        }
+
+        public static AstNumber operator -(AstNumber left, AstNumber right)
+        {
+            return new AstNumber(left.Value - right.Value);
+        }
+
+        public static AstNumber operator -(AstNumber right)
+        {
+            return new AstNumber(-right.Value);
+        }
+
+        public static AstNumber operator /(AstNumber left, AstNumber right)
+        {
+            dynamic l;
+            if (left.t is Type.Double ||
+                right.t is Type.Double ||
+                left.Value % right.Value == 0) // Integer division OK
+                l = left.Value;
+            else
+                l = (double) left.Value;
+            return new AstNumber(l / right.Value);
+        }
+
+        public static AstBoolean operator >(AstNumber left, AstNumber right)
+        {
+            return new AstBoolean(left.Value > right.Value);
+        }
+
+        public static AstBoolean operator <(AstNumber left, AstNumber right)
+        {
+            return new AstBoolean(left.Value < right.Value);
         }
 
         public AstNumber() : this(0)
@@ -190,6 +288,24 @@ namespace Lisp
         public static bool operator !=(AstBoolean ab, AstObject ao)
         {
             return !(ab == ao);
+        }
+
+        protected bool Equals(AstBoolean other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((AstBoolean) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
 
         public string Represent()
