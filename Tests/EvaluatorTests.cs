@@ -1,0 +1,70 @@
+﻿using Lisp;
+using Xunit;
+using static Lisp.Evaluator;
+
+namespace Tests
+{
+    public class EvaluatorTests
+    {
+        private Environment e = new Environment()
+        {
+            {new AstSymbol("one"), new AstNumber(1)}
+        };
+
+        [Fact]
+        public void SymbolIsLookedup() =>
+            Assert.Equal(new AstNumber(1), Eval(new AstSymbol("one"), e));
+
+        [Fact]
+        public void MissingSymbolThrows() =>
+            Assert.Throws<EvaluationException>(() => Eval(new AstSymbol("two"), e));
+
+        [Fact]
+        public void NumberIsReturned() =>
+            Assert.Equal(new AstNumber(1), Eval(new AstNumber(1), e));
+
+        [Fact]
+        public void FuncIsExecuted() =>
+            Assert.Equal(new AstNumber(2),
+                Eval(new AstList(new AstSymbol("+"), new AstNumber(1), new AstNumber(1)),
+                    Environment.StandardEnv()));
+
+        [Fact]
+        public void DefineReturnsSymbol() =>
+            Assert.Equal(new AstSymbol("two"),
+                Eval(new AstList(new AstSymbol("define"), new AstSymbol("two"), new AstNumber(2)), e));
+
+        [Fact]
+        public void DefinedSymbolCanBeLookedup()
+        {
+            Eval(new AstList(new AstSymbol("define"), new AstSymbol("two"), new AstNumber(2)), e);
+            Assert.Equal(new AstNumber(2), Eval(new AstSymbol("two"), e));
+        }
+
+        [Fact]
+        public void DefineTakesExactly2Arguments()
+        {
+            Assert.Throws<EvaluationException>(() =>
+                Eval(new AstList(new AstSymbol("define")), e));
+            Assert.Throws<EvaluationException>(() =>
+                Eval(new AstList(new AstSymbol("define"),
+                    new AstSymbol("define")), e));
+            Assert.Throws<EvaluationException>(() =>
+                Eval(
+                    new AstList(new AstSymbol("define"),
+                        new AstSymbol("define"),
+                        new AstSymbol("define"),
+                        new AstSymbol("define")), e));
+        }
+
+        [Fact]
+        public void DefineFirstArgHasToBeSymbol() =>
+            Assert.Throws<EvaluationException>(() =>
+                Eval(
+                    new AstList(
+                        new AstSymbol("define"),
+                        new AstList(),
+                        new AstSymbol("a")),
+                    e));
+    }
+}

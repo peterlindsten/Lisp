@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Lisp
@@ -22,13 +23,13 @@ namespace Lisp
         {
             var ret = new StringBuilder();
             ret.Append('(');
-            foreach (var ao in al.Objects)
+            var list = new Queue<AstObject>(al.Objects);
+            while (list.Count > 0)
             {
-                ret.Append(Print(ao));
-                ret.Append(' ');
+                ret.Append(Print(list.Dequeue()));
+                if (list.Count != 0)
+                    ret.Append(' ');
             }
-
-            ret.Remove(ret.Length - 1, 1);
 
             ret.Append(')');
             return ret.ToString();
@@ -36,7 +37,7 @@ namespace Lisp
 
         private static string PrintAtom(AstAtom ao)
         {
-            return ao.Text;
+            return ao.Represent();
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Lisp
     {
         public static int Main(string[] args)
         {
+            var env = Environment.StandardEnv();
             Console.WriteLine("Ready for hacking!");
             while (true)
             {
@@ -20,13 +21,21 @@ namespace Lisp
                 {
                     continue;
                 }
-                Console.WriteLine(Rep(line));
+
+                try
+                {
+                    Console.WriteLine(Rep(line, env));
+                }
+                catch (EvaluationException ee)
+                {
+                    Console.WriteLine(ee.Message);
+                }
             }
         }
 
-        public static string Rep(string line)
+        public static string Rep(string line, Environment env)
         {
-            return Print(Eval(Read(line)));
+            return Print(Eval(Read(line), env));
         }
 
         public static AstObject Read(string expression)
@@ -34,9 +43,9 @@ namespace Lisp
             return Reader.Read(expression);
         }
 
-        public static AstObject Eval(AstObject ao)
+        public static AstObject Eval(AstObject ao, Environment env)
         {
-            return ao;
+            return Evaluator.Eval(ao, env);
         }
 
         public static string Print(AstObject ao)
