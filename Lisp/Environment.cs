@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lisp
 {
@@ -13,7 +15,15 @@ namespace Lisp
                 {new AstSymbol("-"), new AstFunc(l => l.Subtract(ao => (AstNumber) ao))},
                 {new AstSymbol("/"), new AstFunc(l => l.Divide(ao => (AstNumber) ao))},
                 {new AstSymbol("list"), new AstFunc(l => new AstList(l))},
-                {new AstSymbol(">"), new AstFunc(l => l.LargerThen(ao => (AstNumber) ao))},
+                {new AstSymbol(">"), new AstFunc(l => l.GreaterThen(ao => (AstNumber) ao))},
+                {new AstSymbol("<"), new AstFunc(l => l.LessThen(ao => (AstNumber) ao))},
+                {new AstSymbol("first"), new AstFunc(l => ((AstList)l.First()).Objects.First())},
+                {new AstSymbol("rest"), new AstFunc(l => new AstList(((AstList)l.First()).Objects.Skip(1)))},
+                {new AstSymbol("print"), new AstFunc(l =>
+                {
+                    Console.WriteLine(l.Aggregate("", (s, a) => s + a.ToString())); // Represent?
+                    return new AstBoolean(true);
+                })}, 
             };
             return ret;
         }

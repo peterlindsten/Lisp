@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 
@@ -51,11 +50,18 @@ namespace Lisp
                 }
                 var f = (AstFunc) Eval(al.Objects[0], env);
                 var args = al.Objects.Skip(1).Select(o => Eval(o, env));
-                return f.f.Invoke(args.ToList());
+                try
+                {
+                    return f.f.Invoke(args.ToList());
+                }
+                catch (InvalidCastException e)
+                {
+                    throw new EvaluationException(e.Message);
+                }
             }
 
             Debug.Assert(false, "Encountered unknown AstObject");
-            throw new EvaluateException($"Encountered unknown AstObject: {ao}");
+            throw new EvaluationException($"Encountered unknown AstObject: {ao}");
         }
     }
 
