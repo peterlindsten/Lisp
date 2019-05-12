@@ -103,7 +103,7 @@ namespace Lisp
 
         public override int GetHashCode()
         {
-            throw new NotImplementedException();
+            return HashCode.Combine(Value);
         }
 
         public string Represent()
@@ -112,13 +112,18 @@ namespace Lisp
         }
     }
 
-    public class AstFunc : AstObject
+    public class AstFunc : AstAtom
     {
-        public readonly Func<List<AstObject>, AstObject> f;
+        public readonly Func<List<AstObject>, AstObject> F;
 
         public AstFunc(Func<List<AstObject>, AstObject> f)
         {
-            this.f = f;
+            F = f;
+        }
+
+        public string Represent()
+        {
+            return "Function " + F.GetHashCode();
         }
     }
 }

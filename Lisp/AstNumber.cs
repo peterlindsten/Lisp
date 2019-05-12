@@ -130,6 +130,11 @@ namespace Lisp
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        public override string ToString()
+        {
+            return Represent();
+        }
     }
 
     public static class AstHelpers

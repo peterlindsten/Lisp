@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -25,7 +26,9 @@ namespace Lisp
                 {
                     if (al.Objects.Count == 3 && al.Objects[1] is AstSymbol symbol)
                     {
-                        env[symbol] = al.Objects[2]; // TODO: This sets ref, not copying value. "Lazy" Right or wrong?
+                        env[symbol] =
+                            Eval(al.Objects[2],
+                                env); // TODO: Eager, right or wrong? Lazy did implicit quote - Need later eval for that
                         return symbol;
                     }
                 }
@@ -48,11 +51,48 @@ namespace Lisp
                         return cond;
                     }
                 }
+
+                if (al.Objects[0].Equals(new AstSymbol("lambda")))
+                {
+                    if (al.Objects.Count == 3 && al.Objects[1] is AstList list)
+                    {
+                        AstObject Func(List<AstObject> x)
+                        {
+                            var environment = new Environment(env);
+                            for (var index = 0; index < list.Objects.Count; index++)
+                            {
+                                var argName = list.Objects[index];
+                                if (argName is AstSymbol @as)
+                                {
+                                    if (x.Count > index)
+                                        environment[@as] = x[index];
+                                    else
+                                        throw new EvaluationException("Currying not yet supported");
+//                                        return
+//                                            Eval(new AstList(new AstSymbol("lambda"),
+//                                                    new AstList(list.Objects.Take(index + 1).ToList()),
+//                                                    al.Objects[2]),
+//                                                environment); 
+                                }
+                                else
+                                {
+                                    throw new EvaluationException(
+                                        "Encountered non-symbol in parameter definition list: " + argName.GetType());
+                                }
+                            }
+
+                            return Eval(al.Objects[2], environment);
+                        }
+
+                        return new AstFunc(Func);
+                    }
+                }
+
                 var f = (AstFunc) Eval(al.Objects[0], env);
                 var args = al.Objects.Skip(1).Select(o => Eval(o, env));
                 try
                 {
-                    return f.f.Invoke(args.ToList());
+                    return f.F.Invoke(args.ToList());
                 }
                 catch (InvalidCastException e)
                 {

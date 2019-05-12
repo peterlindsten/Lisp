@@ -8,7 +8,8 @@ namespace Tests
     {
         private Environment e = new Environment()
         {
-            {new AstSymbol("one"), new AstNumber(1)}
+            {new AstSymbol("one"), new AstNumber(1)},
+            {new AstSymbol("+"), new AstFunc(l => l.Sum(ao => (AstNumber) ao))},
         };
 
         [Fact]
@@ -114,6 +115,29 @@ namespace Tests
                         new AstBoolean(true),
                         new AstBoolean(true),
                         new AstBoolean(true)),
+                    e));
+        }
+
+        [Fact]
+        public void LambdaReturnsAppliable()
+        {
+            // Applied identity: ((lambda (a) a) 1) => 1
+            Assert.Equal(new AstNumber(1), Eval(new AstList(new AstList(new AstSymbol("lambda"),
+                new AstList(new AstSymbol("a")),
+                new AstSymbol("a")), new AstNumber(1)), e));
+        }
+
+        [Fact]
+        public void LambdaParamsAreBound()
+        {
+            // ((lambda (a) (+ 1 a) 1) => 2
+            Assert.Equal(new AstNumber(2),
+                Eval(new AstList(new AstList(new AstSymbol("lambda"),
+                            new AstList(new AstSymbol("a")),
+                            new AstList(new AstSymbol("+"),
+                                new AstSymbol("a"),
+                                new AstNumber(1))),
+                        new AstNumber(1)),
                     e));
         }
     }
